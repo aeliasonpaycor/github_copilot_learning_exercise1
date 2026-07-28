@@ -36,14 +36,29 @@ document.addEventListener("DOMContentLoaded", () => {
         if (userAlreadySignedUp) {
           activityCard.classList.add("disabled");
         }
+        const escapeHtml = (value) =>
+          String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+
+        const safeName = escapeHtml(name);
+        const safeDescription = escapeHtml(details.description);
+        const safeSchedule = escapeHtml(details.schedule);
+
         const participantsList = details.participants.length > 0
-          ? `<ul class="participants-list">${details.participants.map(email => `<li><span class="participant-email">${email}</span><button class="delete-participant" data-activity="${name}" data-email="${email}" type="button" title="Remove participant">×</button></li>`).join('')}</ul>`
+          ? `<ul class="participants-list">${details.participants.map((email) => {
+              const safeEmail = escapeHtml(email);
+              return `<li><span class="participant-email">${safeEmail}</span><button class="delete-participant" data-activity="${safeName}" data-email="${safeEmail}" type="button" title="Remove participant">×</button></li>`;
+            }).join("")}</ul>`
           : '<p class="no-participants">No participants yet</p>';
         
         activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
+          <h4>${safeName}</h4>
+          <p>${safeDescription}</p>
+          <p><strong>Schedule:</strong> ${safeSchedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants-section">
             <h5>Participants:</h5>
