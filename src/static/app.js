@@ -4,14 +4,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // Create variable for email input and add listener to execute fetchActivities when the email value changes
+  const emailInput = document.getElementById("email");
+  emailInput.addEventListener("change", () => {
+    const userEmail = emailInput.value;
+    fetchActivities(userEmail);
+  });
+
   // Function to fetch activities from API
-  async function fetchActivities() {
+  async function fetchActivities(userEmail) {
     try {
       const response = await fetch("/activities");
       const activities = await response.json();
 
       // Clear loading message
       activitiesList.innerHTML = "";
+
+      // Clear previous options in the select dropdown
+      activitySelect.innerHTML = '<option value="">Select an activity</option>';
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
@@ -20,6 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Add disabled class to activities that the user has already signed up for.
+        // disabled when the user has already registered for it.
+        const userAlreadySignedUp = userEmail && details.participants.includes(userEmail);
+        if (userAlreadySignedUp) {
+          activityCard.classList.add("disabled");
+        }
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
@@ -28,6 +44,11 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         activitiesList.appendChild(activityCard);
+
+        // If userEmail is provided, check if the user is already signed up for this activity
+        if (userEmail && details.participants.includes(userEmail)) {
+          return; // Skip adding this activity to the dropdown if the user is already signed up
+        }
 
         // Add option to select dropdown
         const option = document.createElement("option");
